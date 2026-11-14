@@ -13,8 +13,15 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
         with:
           gradle-version: 8.9
-      - run: gradle assembleDebug
+      - name: Build
         working-directory: MFilm
+        run: |
+          set +e
+          gradle assembleDebug --console=plain > build.log 2>&1
+          code=$?
+          echo "### Build errors" >> $GITHUB_STEP_SUMMARY
+          grep -E "^e: |What went wrong|Caused by" -A3 build.log | head -60 | sed 's/^/    /' >> $GITHUB_STEP_SUMMARY
+          exit $code
       - uses: actions/upload-artifact@v4
         with:
           name: MFilm-apk
